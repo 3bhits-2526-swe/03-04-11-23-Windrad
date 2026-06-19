@@ -5,8 +5,10 @@ public class WindmillRotation : MonoBehaviour
 {
     [SerializeField] float rotationSpeed = 5f;
     [SerializeField] Transform bladeT;
+    [SerializeField] float colorLerpSpeed = 5f; // Geschwindigkeit des Übergangs
 
     private Renderer[] bladeRenderers;
+    private Color currentColor = Color.green;
 
     void Awake()
     {
@@ -28,10 +30,10 @@ public class WindmillRotation : MonoBehaviour
     {
         if (bladeT != null)
         {
-            bladeT.Rotate(Vector3.up * rotationSpeed);
+            // Multipliziert mit Time.deltaTime für frameraten-unabhängige Rotation
+            bladeT.Rotate(Vector3.up * rotationSpeed * Time.deltaTime);
         }
 
-        // Ändert die Farbe nun kontinuierlich in jedem Frame basierend auf der aktuellen Geschwindigkeit
         ApplyColorBasedOnSpeed();
     }
 
@@ -41,25 +43,27 @@ public class WindmillRotation : MonoBehaviour
 
         Color targetColor = Color.green;
 
-        // Nutzt die Grenzwerte (0-30, 31-70, 71-100) direkt aus deiner Aufgabenstellung
         if (rotationSpeed >= 0f && rotationSpeed <= 30f)
         {
             targetColor = Color.green;
         }
-        else if (rotationSpeed >= 31f && rotationSpeed <= 70f)
+        else if (rotationSpeed > 30f && rotationSpeed <= 70f)
         {
             targetColor = Color.yellow;
         }
-        else if (rotationSpeed >= 71f)
+        else if (rotationSpeed > 70f)
         {
             targetColor = Color.red;
         }
+
+        // Smoother Übergang via Lerp
+        currentColor = Color.Lerp(currentColor, targetColor, Time.deltaTime * colorLerpSpeed);
 
         foreach (Renderer rend in bladeRenderers)
         {
             if (rend != null && rend.material != null)
             {
-                rend.material.color = targetColor;
+                rend.material.color = currentColor;
             }
         }
     }
